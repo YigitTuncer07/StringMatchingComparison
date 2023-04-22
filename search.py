@@ -8,20 +8,53 @@ start_time = time.time()
 
 comparisons = 0
 
-table = {}
+btable = {}
+
+gtable = []
+
+length = 0
 
 with open('test.html', 'r') as file:
     lines = file.readlines()
     
 
-def getlookuptable(word):
-    global table
-    le = len(word) - 1
+def conbadtable(word):
+    global btable
+    global length
+    length = len(word) - 1
     i = 0
-    while i < le:
-        table[word[i]] = le - i
+    while i < length:
+        btable[word[i]] = length - i
         i += 1
-    return le
+
+
+def congoodtable(word):
+    global gtable
+    global length
+    try:
+        i = length - btable[word[length]]
+    except KeyError:
+        return
+    lgtable = 1
+    le = lgtable
+    while i >= 0:
+        if word[i] == word[length-lgtable+le]:
+            if not le:
+                le = lgtable
+            le -= 1
+            i -= 1
+        else:
+            if not le:
+                gtable.append(length-lgtable-i)
+                lgtable += 1
+                i = length - lgtable
+            if le >= lgtable:
+                i -= 1
+            le = lgtable
+    gtable.append(length - le - 1)
+    lgtable -= 1
+    for i in range(length-lgtable-1):
+        gtable.append(gtable[lgtable])
 
 
 def horspoolsearch(word):
@@ -45,12 +78,45 @@ def horspoolsearch(word):
         else:
             try:
                 c = length - a
-                i += (table[line[i + c]] + c)
+                i += (btable[line[i + c]] + c)
             except KeyError:
                 i += (length + 1)
             a = length
 
 
+def boyermoore(word):
+    global length
+    global comparisons
+    global line
+    size = len(line)
+    i = length
+    a = length
+    while i < size:
+        comparisons += 1
+        if line[i] == word[a]:
+            if a:
+                i -= 1
+                a -= 1
+            #There is a match
+            else:
+                a = length
+                line = line[:i] + '<mark>' + word + '</mark>' + line[i + length + 1:]
+                i += (length + 14)
+        else:
+            c = length - a
+            if c:
+                try:
+                    temp = max(btable[line[i]] - c, 1)
+                    temp2 = gtable[c - 1]
+                    i += (max(temp, temp2) + c)
+                except KeyError:
+                    i += length + 1
+            else:
+                try:
+                    i += ((btable[line[i]]) + c)
+                except KeyError:
+                    i += (length + 1)
+            a = length
 
 
 def bruteSearch(sentence,word): 
@@ -72,12 +138,13 @@ def bruteSearch(sentence,word):
 
 word = input("Enter the word: ").strip()
 
-#Constructs table. Since brute force does not need it, we have to change for loop below
-#Length is word's length - 1.
-length = getlookuptable(word)
+#Constructs tables. Since brute force does not need it, we have to change for loop below
+#Length which assigned in bad table, is word's length - 1.
+conbadtable(word)
+congoodtable(word)
 
 method = input("Enter how the string should be found: ")
-if (((method != "brute") and (method != "horspool") and (method != "boyar"))):
+if (((method != "brute") and (method != "horspool") and (method != "Boyer"))):
     print("false input")
     sys.exit(1)
 
@@ -94,7 +161,8 @@ for i in range(len(lines)):
             found = True            
     elif (method == "horspool"):
         horspoolsearch(word)
-           
+    elif method == "Boyer":
+        boyermoore(word)
     else:
         print("horsealgo")
 
