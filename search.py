@@ -43,29 +43,40 @@ def congoodtable():
     # So all values must be length of pattern
     except KeyError:
         return
-    # lgtable is length of good suffix table + 1
+    l1 = length
+    #lgtable is length of good suffix table+1
     lgtable = 1
     le = lgtable
-    while i >= 0:
-        if word[i] == word[length-lgtable+le]:
+    # shortcut is if pattern does not have same pre letter with any k value (EX: ...323...323 while k = 2)
+    # used for terminatind function
+    shortcut = False
+    while lgtable < length+1:
+        if word[l1] == word[i]:
             if not le:
+                #false condition
+                shortcut = True
+                l1 = length
                 le = lgtable
-            le -= 1
-            i -= 1
+            else:
+                le -= 1
+                l1 -= 1
         else:
             if not le:
-                gtable.append(length-lgtable-i)
+                #true condition
                 lgtable += 1
-                i = length - lgtable
-            if le >= lgtable:
-                i -= 1
+                gtable.append(l1 - i)
+                i = length - btable[word[length]] + 1
+            l1 = length
             le = lgtable
-    gtable.append(length - le - 1)
-    lgtable -= 1
-    # If index (i) of pattern becomes 0 and if length of good suffix table is less than pattern's length,
-    # Add last value of good suffix table to rest of table's empty values.
-    for i in range(length-lgtable-1):
-        gtable.append(gtable[lgtable])
+        if not i:
+            lgtable += 1
+            gtable.append(l1 + 1)
+            i = length - btable[word[length]] + 1
+            l1 = length
+            le = lgtable
+            if shortcut:
+                return
+        i -= 1
 
 
 def horspoolsearch():
@@ -128,7 +139,7 @@ def boyermoore():
                     temp = max(btable[line[i]] - c, 1)
                     temp2 = gtable[c - 1]
                     i += (max(temp, temp2) + c)
-                except KeyError:
+                except KeyError or IndexError:
                     i += length + 1
             else:
                 # If pattern's last letter's comparison is in bad symbol table,
@@ -145,17 +156,25 @@ def brutesearch():
     global comparisons
     global length
     global line
-    sentenceLength = len(line)
-    wordLength = length + 1
-    for i in range(sentenceLength):
-        j = 0
-        while j < wordLength and line[i + j] == word[j]:
-            j = j + 1
-        comparisons = comparisons + j + 1  #This increments count with the number of comparisons
-        #The +1 is because we count the failed comparisons aswell
-        if j == wordLength:
-            line = line[:i] + '<mark>' + word + '</mark>' + line[i + len(word):]
-            i += (wordLength + 13)
+    size = len(line)
+    j = 0
+    i = 0
+    while i < size:
+        comparisons += 1
+        if line[i] == word[j]:
+            j += 1
+            if j == (length + 1):
+                temp = '<mark>' + word + '</mark>'
+                temp = temp + line[(i + 1):]
+                line = line[:(i - length)] + temp
+                i += 13
+                size += 13
+                j = 0
+        else:
+            i -= j
+            j = 0
+        i += 1
+
 
 
 #.strip() for if input has space in begining or ending
@@ -166,6 +185,7 @@ method = input("Enter how the string should be found: ")
 
 
 if method == "brute":
+    length = len(word) - 1
     for i in range(len(lines)):
         line = lines[i]
         brutesearch()
@@ -187,6 +207,8 @@ else:
     print("Unknown algorithm")
     sys.exit(1)
 
+print(btable)
+print(gtable)
 print("Number of comparisons: " + str(comparisons))
 
 with open('test.html', 'w') as file:
