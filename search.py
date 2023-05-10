@@ -15,7 +15,7 @@ gtable = []
 # Pattern's length-1. It will be assigned later
 length = 0
 
-with open('test.html', 'r') as file:
+with open('textSample1.html', 'r') as file:
     lines = file.readlines()
     
 
@@ -49,12 +49,12 @@ def congoodtable():
     le = lgtable
     # shortcut is if pattern does not have same pre letter with any k value (EX: ...323...323 while k = 2)
     # used for terminatind function
-    shortcut = False
+    shortcut = True
     while lgtable < length+1:
         if word[l1] == word[i]:
             if not le:
                 #false condition
-                shortcut = True
+                shortcut = False
                 l1 = length
                 le = lgtable
             else:
@@ -65,9 +65,10 @@ def congoodtable():
                 #true condition
                 lgtable += 1
                 gtable.append(l1 - i)
-                i = length - btable[word[length]] + 1
+                i = length - btable[word[length]]
             l1 = length
             le = lgtable
+            continue
         if not i:
             lgtable += 1
             gtable.append(l1 + 1)
@@ -116,6 +117,7 @@ def boyermoore():
     global comparisons
     global line
     size = len(line)
+    sizegtable = len(gtable) - 1
     i = length
     a = length
     while i < size:
@@ -137,9 +139,12 @@ def boyermoore():
                 # Otherwise, increases it by pattern's length
                 try:
                     temp = max(btable[line[i]] - c, 1)
-                    temp2 = gtable[c - 1]
+                    try:
+                        temp2 = gtable[c - 1]
+                    except IndexError:
+                        temp2 = gtable[sizegtable]
                     i += (max(temp, temp2) + c)
-                except KeyError or IndexError:
+                except KeyError:
                     i += length + 1
             else:
                 # If pattern's last letter's comparison is in bad symbol table,
