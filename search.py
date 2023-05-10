@@ -2,7 +2,7 @@ import sys
 import time
 
 
-start_time = time.time()
+
 
 comparisons = 0
 
@@ -15,7 +15,7 @@ gtable = []
 # Pattern's length-1. It will be assigned later
 length = 0
 
-with open('textSample1.html', 'r') as file:
+with open('test.html', 'r') as file:
     lines = file.readlines()
     
 
@@ -188,6 +188,7 @@ word = input("Enter the word: ").strip()
 
 method = input("Enter how the string should be found: ")
 
+start_time = time.time()
 
 if method == "brute":
     length = len(word) - 1
