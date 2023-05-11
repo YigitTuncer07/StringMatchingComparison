@@ -1,8 +1,6 @@
 import sys
 import time
 
-
-
 comparisons = 0
 
 # Bad symbol table as dictionary
@@ -14,10 +12,9 @@ gtable = []
 # Pattern's length-1. It will be assigned later
 length = 0
 
-with open('textSample1.html', 'r') as file:
+with open('test.html', 'r') as file:
     lines = file.readlines()
     
-
 # Construction of bad symbol table
 def conbadtable():
     global word
@@ -28,7 +25,6 @@ def conbadtable():
     while i < length:
         btable[word[i]] = length - i
         i += 1
-
 
 #Construction of good suffix table
 def congoodtable():
@@ -47,43 +43,44 @@ def congoodtable():
     lgtable = 1
     le = lgtable
     # shortcut is if pattern does not have same pre letter with any k value (EX: ...323...323 while k = 2)
-    # used for terminatind function
+    # used for terminating function
     shortcut = True
-    while lgtable < length+1:
-        if word[l1] == word[i]:
+    while lgtable < (length+1):
+        if word[i] == word[l1]:
             if not le:
-                #false condition
+                # false condition
                 shortcut = False
-                l1 = length
                 le = lgtable
+                l1 = length
             else:
                 le -= 1
                 l1 -= 1
+                i -= 1
         else:
             if not le:
-                #true condition
-                lgtable += 1
+                # true condiition
                 gtable.append(l1 - i)
+                lgtable += 1
                 i = length - btable[word[length]]
+            elif le == lgtable:
+                i -= 1
             l1 = length
             le = lgtable
-            continue
-        if not i:
-            lgtable += 1
+        if i == -1:
             gtable.append(l1 + 1)
-            i = length - btable[word[length]] + 1
-            l1 = length
-            le = lgtable
+            lgtable += 1
             if shortcut:
                 return
-        i -= 1
-
+            le = lgtable
+            l1 = length
+            i = length - btable[word[length]]
 
 def horspoolsearch():
     global word
     global length
     global comparisons
     global line
+    global btable
     size = len(line)
     i = length
     a = length
@@ -109,12 +106,13 @@ def horspoolsearch():
                 i += (length + 1)
             a = length
 
-
 def boyermoore():
     global word
     global length
     global comparisons
     global line
+    global btable
+    global gtable
     size = len(line)
     sizegtable = len(gtable) - 1
     i = length
@@ -154,7 +152,6 @@ def boyermoore():
                     i += (length + 1)
             a = length
 
-
 def brutesearch():
     global word
     global comparisons
@@ -179,13 +176,10 @@ def brutesearch():
             j = 0
         i += 1
 
-
-
 #.strip() for if input has space in begining or ending
 word = input("Enter the word: ").strip()
 
-
-method = input("Enter how the string should be found: ")
+method = input("Enter how the string should be found: (brute, horspool, boyer)")
 
 start_time = time.time()
 
@@ -195,29 +189,35 @@ if method == "brute":
         line = lines[i]
         brutesearch()
         lines[i] = line
+    print("bad table not generated for brute force")
+    print("good table not generated for brute force")
 elif method == "horspool":
     conbadtable()
     for i in range(len(lines)):
         line = lines[i]
         horspoolsearch()
         lines[i] = line
-elif method == "Boyer":
+    print(btable)
+    print("good table not generated for horspool's")
+elif method == "boyer":
     conbadtable()
     congoodtable()
     for i in range(len(lines)):
         line = lines[i]
         boyermoore()
         lines[i] = line
+    print(btable)
+    print(gtable)
 else:
     print("Unknown algorithm")
     sys.exit(1)
 
-print(btable)
-print(gtable)
+
 print("Number of comparisons: " + str(comparisons))
 
-with open('test.html', 'w') as file:
+with open('textSample1.html', 'w') as file:
     file.writelines(lines)
     
-
-print(time.time() - start_time, "seconds")
+finalTime = time.time() - start_time
+finalTime = finalTime * 1000
+print(finalTime, "milli seconds")
